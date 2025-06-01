@@ -1,11 +1,12 @@
-
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FileText, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const recentTickets = [
     { id: 1, subject: 'Password reset request', status: 'In Progress', department: 'IT', date: '2024-01-15' },
     { id: 2, subject: 'New hire equipment setup', status: 'Open', department: 'HR', date: '2024-01-14' },
@@ -18,6 +19,10 @@ const Dashboard = () => {
     { title: 'Resolved', value: 28, icon: CheckCircle, color: 'text-green-600' },
     { title: 'Urgent', value: 3, icon: AlertCircle, color: 'text-red-600' },
   ];
+
+  const handleViewTicket = (ticketId: number) => {
+    navigate(`/ticket/${ticketId}`);
+  };
 
   return (
     <Layout userRole="employee">
@@ -105,7 +110,9 @@ const Dashboard = () => {
                     }`}>
                       {ticket.status}
                     </span>
-                    <Button variant="ghost" size="sm">View</Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleViewTicket(ticket.id)}>
+                      View
+                    </Button>
                   </div>
                 </div>
               ))}

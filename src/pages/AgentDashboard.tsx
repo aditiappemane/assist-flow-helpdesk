@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,8 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Search, Filter, CalendarIcon, Eye, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 const AgentDashboard = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('all');
@@ -104,6 +105,14 @@ const AgentDashboard = () => {
       'Urgent': 'bg-red-100 text-red-800',
     };
     return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig['Medium'];
+  };
+
+  const handleViewTicket = (ticketId: string) => {
+    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+  };
+
+  const handleReplyTicket = (ticketId: string) => {
+    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   return (
@@ -214,11 +223,11 @@ const AgentDashboard = () => {
                   </div>
                   
                   <div className="flex gap-2 ml-4">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleReplyTicket(ticket.id)}>
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Reply
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.id)}>
                       <Eye className="h-4 w-4 mr-2" />
                       View
                     </Button>

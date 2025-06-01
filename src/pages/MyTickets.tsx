@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, Eye } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const MyTickets = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -86,6 +87,10 @@ const MyTickets = () => {
     
     return matchesSearch && matchesDepartment && matchesStatus;
   });
+
+  const handleViewTicket = (ticketId: string) => {
+    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+  };
 
   return (
     <Layout userRole="employee">
@@ -168,7 +173,7 @@ const MyTickets = () => {
                     </div>
                   </div>
                   
-                  <Button variant="outline" size="sm" className="ml-4">
+                  <Button variant="outline" size="sm" className="ml-4" onClick={() => handleViewTicket(ticket.id)}>
                     <Eye className="h-4 w-4 mr-2" />
                     View Details
                   </Button>

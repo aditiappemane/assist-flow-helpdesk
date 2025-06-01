@@ -44,7 +44,7 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
 
   const agentNavItems = [
     { icon: Home, label: 'Agent Dashboard', path: '/agent-dashboard' },
-    { icon: FileText, label: 'My Tickets', path: '/my-tickets' },
+    { icon: FileText, label: 'All Tickets', path: '/agent-dashboard' },
     { icon: MessageSquare, label: 'Ask Bot', path: '/ask-bot' },
   ];
 

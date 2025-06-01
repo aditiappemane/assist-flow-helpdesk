@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Clock, User, Calendar, FileText, Send, Bot, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 const TicketDetail = () => {
   const [status, setStatus] = useState('In Progress');
@@ -71,7 +72,68 @@ const TicketDetail = () => {
   ];
 
   const handleRegenerate = () => {
-    setAiReply('I see you\'re experiencing email access issues after your password change. This is a common issue that can usually be resolved quickly. Let me help you with a step-by-step solution:\n\n1. First, let\'s verify your new password works by logging into the company portal\n2. If that works, the issue is with your email client configuration\n3. I\'ll send you updated email settings for your devices\n4. We may need to recreate your email profile if the settings don\'t work\n\nI\'ll also check our mail server logs to ensure there are no authentication issues on our end. Please try the portal login and let me know the result.');
+    // Simulate AI regeneration
+    const alternativeReplies = [
+      'I see you\'re experiencing email access issues after your password change. This is a common issue that can usually be resolved quickly. Let me help you with a step-by-step solution:\n\n1. First, let\'s verify your new password works by logging into the company portal\n2. If that works, the issue is with your email client configuration\n3. I\'ll send you updated email settings for your devices\n4. We may need to recreate your email profile if the settings don\'t work\n\nI\'ll also check our mail server logs to ensure there are no authentication issues on our end. Please try the portal login and let me know the result.',
+      'Hi Jane, I understand the frustration with email access after a password change. Let me provide a comprehensive solution:\n\n1. Verify the new password works on our web portal\n2. Remove and re-add your email account on all devices\n3. Update your Outlook profile with the new credentials\n4. Clear any cached passwords in your browser\n\nI\'ve also checked our server logs and see some authentication attempts. This confirms it\'s likely a client configuration issue. Would you like me to schedule a quick screen-sharing session to walk through the setup?'
+    ];
+    
+    const randomReply = alternativeReplies[Math.floor(Math.random() * alternativeReplies.length)];
+    setAiReply(randomReply);
+    
+    toast({
+      title: "AI Reply Regenerated",
+      description: "A new response has been generated based on the ticket content.",
+    });
+  };
+
+  const handleUseAiReply = () => {
+    setReply(aiReply);
+    toast({
+      title: "AI Reply Applied",
+      description: "The AI-generated response has been copied to your reply box.",
+    });
+  };
+
+  const handleSendReply = () => {
+    if (!reply.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a reply before sending.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Reply Sent",
+      description: "Your response has been sent to the customer.",
+    });
+    setReply('');
+  };
+
+  const handleUpdateStatus = () => {
+    toast({
+      title: "Status Updated",
+      description: `Ticket status has been changed to ${status}.`,
+    });
+  };
+
+  const handleAddNote = () => {
+    if (!internalNote.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a note before adding.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Internal Note Added",
+      description: "Your internal note has been saved.",
+    });
+    setInternalNote('');
   };
 
   return (
@@ -198,10 +260,11 @@ const TicketDetail = () => {
                   value={aiReply}
                   onChange={(e) => setAiReply(e.target.value)}
                   className="min-h-[150px] mb-4"
+                  placeholder="AI-generated reply will appear here..."
                 />
                 <div className="flex gap-2">
-                  <Button>Use AI Reply</Button>
-                  <Button variant="outline">Edit & Send</Button>
+                  <Button onClick={handleUseAiReply}>Use AI Reply</Button>
+                  <Button variant="outline" onClick={() => setReply(aiReply)}>Edit & Send</Button>
                 </div>
               </CardContent>
             </Card>
@@ -218,7 +281,7 @@ const TicketDetail = () => {
                   onChange={(e) => setReply(e.target.value)}
                   className="min-h-[120px] mb-4"
                 />
-                <Button>
+                <Button onClick={handleSendReply}>
                   <Send className="h-4 w-4 mr-2" />
                   Send Reply
                 </Button>
@@ -250,7 +313,7 @@ const TicketDetail = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="w-full">Update Status</Button>
+                <Button className="w-full" onClick={handleUpdateStatus}>Update Status</Button>
               </CardContent>
             </Card>
 
@@ -289,7 +352,7 @@ const TicketDetail = () => {
                   onChange={(e) => setInternalNote(e.target.value)}
                   className="mb-3"
                 />
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full" onClick={handleAddNote}>
                   Add Note
                 </Button>
               </CardContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +21,6 @@ const AgentTickets = () => {
     }
   }, []);
 
-  // Filter tickets based on agent's department
   const allTickets = [
     {
       id: 'TK-001',
@@ -109,11 +107,11 @@ const AgentTickets = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   const handleReplyTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   return (

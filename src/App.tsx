@@ -13,7 +13,9 @@ import AskBot from "./pages/AskBot";
 import AgentDashboard from "./pages/AgentDashboard";
 import AgentTickets from "./pages/AgentTickets";
 import AdminTickets from "./pages/AdminTickets";
-import TicketDetail from "./pages/TicketDetail";
+import EmployeeTicketDetail from "./pages/EmployeeTicketDetail";
+import AgentTicketDetail from "./pages/AgentTicketDetail";
+import AdminTicketDetail from "./pages/AdminTicketDetail";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import UserManagement from "./pages/UserManagement";
 import AIManagement from "./pages/AIManagement";
@@ -37,7 +39,9 @@ const App = () => (
             <Route path="/agent-dashboard" element={<AgentDashboard />} />
             <Route path="/agent-tickets" element={<AgentTickets />} />
             <Route path="/admin/tickets" element={<AdminTickets />} />
-            <Route path="/ticket/:id" element={<TicketDetail />} />
+            <Route path="/employee/ticket/:id" element={<EmployeeTicketDetail />} />
+            <Route path="/agent/ticket/:id" element={<AgentTicketDetail />} />
+            <Route path="/admin/ticket/:id" element={<AdminTicketDetail />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/ai" element={<AIManagement />} />

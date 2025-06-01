@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -81,7 +80,7 @@ const MyTickets = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/employee/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   const stats = [

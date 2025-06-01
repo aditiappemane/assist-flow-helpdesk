@@ -110,7 +110,7 @@ const AdminTickets = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/admin/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   const handleReassignTicket = (ticketId: string) => {

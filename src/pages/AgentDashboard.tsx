@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,19 @@ const AgentDashboard = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
+  const [userInfo, setUserInfo] = useState<any>(null);
 
-  const tickets = [
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      setUserInfo(JSON.parse(storedUserInfo));
+    }
+  }, []);
+
+  // All tickets data
+  const allTickets = [
     {
       id: 'TK-001',
       subject: 'Password reset request',
@@ -76,13 +85,62 @@ const AgentDashboard = () => {
       lastUpdate: '2024-01-13',
       description: 'Need help setting up email on mobile device'
     },
+    {
+      id: 'TK-009',
+      subject: 'Benefits inquiry',
+      department: 'HR',
+      priority: 'Medium',
+      status: 'Open',
+      submittedBy: 'John Smith',
+      date: '2024-01-15',
+      lastUpdate: '2024-01-15',
+      description: 'Questions about health insurance coverage'
+    },
+    {
+      id: 'TK-010',
+      subject: 'New hire onboarding',
+      department: 'HR',
+      priority: 'High',
+      status: 'In Progress',
+      submittedBy: 'Sarah Wilson',
+      date: '2024-01-14',
+      lastUpdate: '2024-01-14',
+      description: 'Need to setup new employee workspace and accounts'
+    },
+    {
+      id: 'TK-011',
+      subject: 'Office supplies request',
+      department: 'Admin',
+      priority: 'Low',
+      status: 'Open',
+      submittedBy: 'Mike Johnson',
+      date: '2024-01-14',
+      lastUpdate: '2024-01-14',
+      description: 'Request for additional office supplies for team'
+    },
+    {
+      id: 'TK-012',
+      subject: 'Meeting room booking',
+      department: 'Admin',
+      priority: 'Medium',
+      status: 'Resolved',
+      submittedBy: 'Lisa Brown',
+      date: '2024-01-13',
+      lastUpdate: '2024-01-13',
+      description: 'Need to book conference room for quarterly meeting'
+    }
   ];
 
+  // Filter tickets by agent's department
+  const tickets = userInfo?.department 
+    ? allTickets.filter(ticket => ticket.department === userInfo.department)
+    : allTickets;
+
   const stats = [
-    { title: 'Total Assigned', value: 15, color: 'text-blue-600' },
-    { title: 'Open', value: 3, color: 'text-orange-600' },
-    { title: 'In Progress', value: 5, color: 'text-yellow-600' },
-    { title: 'Resolved Today', value: 8, color: 'text-green-600' },
+    { title: 'Total Assigned', value: tickets.length, color: 'text-blue-600' },
+    { title: 'Open', value: tickets.filter(t => t.status === 'Open').length, color: 'text-orange-600' },
+    { title: 'In Progress', value: tickets.filter(t => t.status === 'In Progress').length, color: 'text-yellow-600' },
+    { title: 'Resolved Today', value: tickets.filter(t => t.status === 'Resolved').length, color: 'text-green-600' },
   ];
 
   const getStatusBadge = (status: string) => {
@@ -108,19 +166,23 @@ const AgentDashboard = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   const handleReplyTicket = (ticketId: string) => {
-    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
   };
 
   return (
     <Layout userRole="agent">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Agent Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage your assigned tickets and support requests</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {userInfo?.department || ''} Agent Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Manage your assigned {userInfo?.department || ''} tickets and support requests
+          </p>
         </div>
 
         {/* Stats Overview */}
@@ -140,8 +202,8 @@ const AgentDashboard = () => {
         {/* Filters */}
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="lg:col-span-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input

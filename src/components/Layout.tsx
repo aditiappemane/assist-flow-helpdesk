@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -34,6 +34,14 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
+  const [userInfo, setUserInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      setUserInfo(JSON.parse(storedUserInfo));
+    }
+  }, []);
 
   const employeeNavItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -44,13 +52,13 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
 
   const agentNavItems = [
     { icon: Home, label: 'Agent Dashboard', path: '/agent-dashboard' },
-    { icon: FileText, label: 'All Tickets', path: '/agent-dashboard' },
+    { icon: FileText, label: 'All Tickets', path: '/agent-tickets' },
     { icon: MessageSquare, label: 'Ask Bot', path: '/ask-bot' },
   ];
 
   const adminNavItems = [
     { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
-    { icon: FileText, label: 'All Tickets', path: '/agent-dashboard' },
+    { icon: FileText, label: 'All Tickets', path: '/admin/tickets' },
     { icon: Users, label: 'User Management', path: '/admin/users' },
     { icon: Brain, label: 'AI Management', path: '/admin/ai' },
   ];
@@ -67,6 +75,9 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
   };
 
   const getRoleDisplay = () => {
+    if (userRole === 'agent' && userInfo?.department) {
+      return `${userInfo.department} Agent`;
+    }
     switch (userRole) {
       case 'agent':
         return 'Support Agent';
@@ -78,6 +89,7 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('userInfo');
     navigate('/');
   };
 

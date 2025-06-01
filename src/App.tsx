@@ -11,6 +11,8 @@ import SubmitTicket from "./pages/SubmitTicket";
 import MyTickets from "./pages/MyTickets";
 import AskBot from "./pages/AskBot";
 import AgentDashboard from "./pages/AgentDashboard";
+import AgentTickets from "./pages/AgentTickets";
+import AdminTickets from "./pages/AdminTickets";
 import TicketDetail from "./pages/TicketDetail";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import UserManagement from "./pages/UserManagement";
@@ -33,6 +35,8 @@ const App = () => (
             <Route path="/my-tickets" element={<MyTickets />} />
             <Route path="/ask-bot" element={<AskBot />} />
             <Route path="/agent-dashboard" element={<AgentDashboard />} />
+            <Route path="/agent-tickets" element={<AgentTickets />} />
+            <Route path="/admin/tickets" element={<AdminTickets />} />
             <Route path="/ticket/:id" element={<TicketDetail />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/users" element={<UserManagement />} />

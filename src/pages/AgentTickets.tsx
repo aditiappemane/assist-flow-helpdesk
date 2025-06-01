@@ -1,62 +1,90 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Calendar } from 'lucide-react';
+import { Search, Eye, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const MyTickets = () => {
+const AgentTickets = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [userInfo, setUserInfo] = useState<any>(null);
 
-  const myTickets = [
+  useEffect(() => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      setUserInfo(JSON.parse(storedUserInfo));
+    }
+  }, []);
+
+  // Filter tickets based on agent's department
+  const allTickets = [
     {
       id: 'TK-001',
       subject: 'Password reset request',
       department: 'IT',
       priority: 'Medium',
-      status: 'In Progress',
+      status: 'Open',
+      submittedBy: 'Jane Doe',
       date: '2024-01-15',
       lastUpdate: '2024-01-15',
       description: 'Unable to access email account after password change'
     },
     {
       id: 'TK-002',
-      subject: 'New hire equipment setup',
+      subject: 'New hire onboarding',
       department: 'HR',
       priority: 'High',
-      status: 'Open',
-      date: '2024-01-14',
-      lastUpdate: '2024-01-14',
-      description: 'Need laptop and access cards for new team member'
+      status: 'In Progress',
+      submittedBy: 'John Smith',
+      date: '2024-01-15',
+      lastUpdate: '2024-01-15',
+      description: 'Need to setup new employee workspace and accounts'
     },
     {
       id: 'TK-003',
-      subject: 'Office space request',
+      subject: 'Office supplies request',
       department: 'Admin',
       priority: 'Low',
-      status: 'Resolved',
-      date: '2024-01-13',
-      lastUpdate: '2024-01-13',
-      description: 'Request for additional desk space for team expansion'
+      status: 'Open',
+      submittedBy: 'Sarah Wilson',
+      date: '2024-01-14',
+      lastUpdate: '2024-01-14',
+      description: 'Request for additional office supplies for team'
     },
     {
       id: 'TK-004',
-      subject: 'Software license renewal',
+      subject: 'VPN connection issues',
       department: 'IT',
+      priority: 'High',
+      status: 'Escalated',
+      submittedBy: 'Robert Wilson',
+      date: '2024-01-13',
+      lastUpdate: '2024-01-14',
+      description: 'Cannot connect to company VPN from home office'
+    },
+    {
+      id: 'TK-005',
+      subject: 'Benefits inquiry',
+      department: 'HR',
       priority: 'Medium',
-      status: 'Closed',
+      status: 'Resolved',
+      submittedBy: 'Emily Chen',
       date: '2024-01-12',
-      lastUpdate: '2024-01-12',
-      description: 'Adobe Creative Suite license expiring soon'
+      lastUpdate: '2024-01-13',
+      description: 'Questions about health insurance coverage'
     },
   ];
+
+  // Filter tickets by agent's department
+  const tickets = userInfo?.department 
+    ? allTickets.filter(ticket => ticket.department === userInfo.department)
+    : allTickets;
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -84,39 +112,26 @@ const MyTickets = () => {
     navigate(`/ticket/${ticketId.replace('TK-', '')}`);
   };
 
-  const stats = [
-    { title: 'Total Tickets', value: myTickets.length, color: 'text-blue-600' },
-    { title: 'Open', value: myTickets.filter(t => t.status === 'Open').length, color: 'text-orange-600' },
-    { title: 'In Progress', value: myTickets.filter(t => t.status === 'In Progress').length, color: 'text-yellow-600' },
-    { title: 'Resolved', value: myTickets.filter(t => t.status === 'Resolved').length, color: 'text-green-600' },
-  ];
+  const handleReplyTicket = (ticketId: string) => {
+    navigate(`/ticket/${ticketId.replace('TK-', '')}`);
+  };
 
   return (
-    <Layout userRole="employee">
+    <Layout userRole="agent">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Tickets</h1>
-          <p className="text-gray-600 dark:text-gray-300">Track and manage your submitted support requests</p>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{stat.title}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            All {userInfo?.department || ''} Tickets
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            View all tickets assigned to {userInfo?.department || 'your'} department
+          </p>
         </div>
 
         {/* Filters */}
         <Card>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -141,25 +156,13 @@ const MyTickets = () => {
                   <SelectItem value="Escalated">Escalated</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="IT">IT</SelectItem>
-                  <SelectItem value="HR">HR</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </CardContent>
         </Card>
 
         {/* Tickets List */}
         <div className="space-y-4">
-          {myTickets.map((ticket) => (
+          {tickets.map((ticket) => (
             <Card key={ticket.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
@@ -178,19 +181,20 @@ const MyTickets = () => {
                     
                     <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                       <span>ID: {ticket.id}</span>
-                      <span>Department: {ticket.department}</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Submitted: {ticket.date}
-                      </span>
-                      <span>Last Updated: {ticket.lastUpdate}</span>
+                      <span>From: {ticket.submittedBy}</span>
+                      <span>Submitted: {ticket.date}</span>
+                      <span>Updated: {ticket.lastUpdate}</span>
                     </div>
                   </div>
                   
                   <div className="flex gap-2 ml-4">
+                    <Button variant="outline" size="sm" onClick={() => handleReplyTicket(ticket.id)}>
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Reply
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.id)}>
                       <Eye className="h-4 w-4 mr-2" />
-                      View Details
+                      View
                     </Button>
                   </div>
                 </div>
@@ -203,4 +207,4 @@ const MyTickets = () => {
   );
 };
 
-export default MyTickets;
+export default AgentTickets;

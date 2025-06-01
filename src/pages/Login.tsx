@@ -12,6 +12,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('employee');
+  const [department, setDepartment] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
@@ -26,10 +27,27 @@ const Login = () => {
       return;
     }
 
+    if (role === 'agent' && !department) {
+      toast({
+        title: "Error",
+        description: "Please select a department for agent login",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Store user info in localStorage for demo purposes
+    const userInfo = {
+      role,
+      department: role === 'agent' ? department : null,
+      email
+    };
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+
     // Simulate login success
     toast({
       title: "Login Successful",
-      description: `Welcome back! Logging in as ${role}`,
+      description: `Welcome back! Logging in as ${role}${role === 'agent' ? ` (${department})` : ''}`,
     });
 
     // Navigate based on role
@@ -92,6 +110,22 @@ const Login = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            {role === 'agent' && (
+              <div className="space-y-2">
+                <Label htmlFor="department">Department</Label>
+                <Select value={department} onValueChange={setDepartment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IT">IT</SelectItem>
+                    <SelectItem value="HR">HR</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <Button type="submit" className="w-full">
               Sign In

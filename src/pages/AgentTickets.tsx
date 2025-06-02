@@ -7,11 +7,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, Eye, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getDepartmentTickets } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
 
 const AgentTickets = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
@@ -21,98 +25,75 @@ const AgentTickets = () => {
     }
   }, []);
 
-  const allTickets = [
-    {
-      id: 'TK-001',
-      subject: 'Password reset request',
-      department: 'IT',
-      priority: 'Medium',
-      status: 'Open',
-      submittedBy: 'Jane Doe',
-      date: '2024-01-15',
-      lastUpdate: '2024-01-15',
-      description: 'Unable to access email account after password change'
-    },
-    {
-      id: 'TK-002',
-      subject: 'New hire onboarding',
-      department: 'HR',
-      priority: 'High',
-      status: 'In Progress',
-      submittedBy: 'John Smith',
-      date: '2024-01-15',
-      lastUpdate: '2024-01-15',
-      description: 'Need to setup new employee workspace and accounts'
-    },
-    {
-      id: 'TK-003',
-      subject: 'Office supplies request',
-      department: 'Admin',
-      priority: 'Low',
-      status: 'Open',
-      submittedBy: 'Sarah Wilson',
-      date: '2024-01-14',
-      lastUpdate: '2024-01-14',
-      description: 'Request for additional office supplies for team'
-    },
-    {
-      id: 'TK-004',
-      subject: 'VPN connection issues',
-      department: 'IT',
-      priority: 'High',
-      status: 'Escalated',
-      submittedBy: 'Robert Wilson',
-      date: '2024-01-13',
-      lastUpdate: '2024-01-14',
-      description: 'Cannot connect to company VPN from home office'
-    },
-    {
-      id: 'TK-005',
-      subject: 'Benefits inquiry',
-      department: 'HR',
-      priority: 'Medium',
-      status: 'Resolved',
-      submittedBy: 'Emily Chen',
-      date: '2024-01-12',
-      lastUpdate: '2024-01-13',
-      description: 'Questions about health insurance coverage'
-    },
-  ];
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const data = await getDepartmentTickets();
+        setTickets(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch tickets. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Filter tickets by agent's department
-  const tickets = userInfo?.department 
-    ? allTickets.filter(ticket => ticket.department === userInfo.department)
-    : allTickets;
+    fetchTickets();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      'Open': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'In Progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      'Resolved': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'Closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      'On Hold': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-      'Escalated': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+      'open': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+      'in_progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+      'resolved': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+      'closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+      'on_hold': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
+      'escalated': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
     };
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig['Open'];
+    return statusConfig[status as keyof typeof statusConfig] || statusConfig['open'];
   };
 
   const getPriorityBadge = (priority: string) => {
     const priorityConfig = {
-      'Low': 'bg-gray-100 text-gray-800',
-      'Medium': 'bg-blue-100 text-blue-800',
-      'High': 'bg-orange-100 text-orange-800',
-      'Urgent': 'bg-red-100 text-red-800',
+      'low': 'bg-gray-100 text-gray-800',
+      'medium': 'bg-blue-100 text-blue-800',
+      'high': 'bg-orange-100 text-orange-800',
+      'urgent': 'bg-red-100 text-red-800',
     };
-    return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig['Medium'];
+    return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig['medium'];
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId}?action=view`);
   };
 
   const handleReplyTicket = (ticketId: string) => {
-    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId}?action=reply`);
   };
+
+  // Filter tickets based on search term and status
+  const filteredTickets = tickets.filter((ticket: any) => {
+    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  if (loading) {
+    return (
+      <Layout userRole="agent">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading tickets...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout userRole="agent">
@@ -146,12 +127,12 @@ const AgentTickets = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                  <SelectItem value="On Hold">On Hold</SelectItem>
-                  <SelectItem value="Escalated">Escalated</SelectItem>
+                  <SelectItem value="open">Open</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                  <SelectItem value="on_hold">On Hold</SelectItem>
+                  <SelectItem value="escalated">Escalated</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -160,45 +141,53 @@ const AgentTickets = () => {
 
         {/* Tickets List */}
         <div className="space-y-4">
-          {tickets.map((ticket) => (
-            <Card key={ticket.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{ticket.subject}</h3>
-                      <Badge className={getStatusBadge(ticket.status)}>
-                        {ticket.status}
-                      </Badge>
-                      <Badge variant="outline" className={getPriorityBadge(ticket.priority)}>
-                        {ticket.priority}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-300 mb-3">{ticket.description}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span>ID: {ticket.id}</span>
-                      <span>From: {ticket.submittedBy}</span>
-                      <span>Submitted: {ticket.date}</span>
-                      <span>Updated: {ticket.lastUpdate}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 ml-4">
-                    <Button variant="outline" size="sm" onClick={() => handleReplyTicket(ticket.id)}>
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Reply
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.id)}>
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                  </div>
-                </div>
+          {filteredTickets.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-gray-500">No tickets found</p>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            filteredTickets.map((ticket: any) => (
+              <Card key={ticket._id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-semibold text-lg">{ticket.subject}</h3>
+                        <Badge className={getStatusBadge(ticket.status)}>
+                          {ticket.status.replace('_', ' ')}
+                        </Badge>
+                        <Badge variant="outline" className={getPriorityBadge(ticket.priority)}>
+                          {ticket.priority}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-gray-600 dark:text-gray-300 mb-3">{ticket.description}</p>
+                      
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span>ID: {ticket.ticketNumber}</span>
+                        <span>From: {ticket.createdBy.name}</span>
+                        <span>Submitted: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                        <span>Updated: {new Date(ticket.updatedAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex gap-2 ml-4">
+                      <Button variant="outline" size="sm" onClick={() => handleReplyTicket(ticket.ticketNumber)}>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Reply
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.ticketNumber)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
     </Layout>

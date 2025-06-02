@@ -1,202 +1,123 @@
-import { useState } from 'react';
-import Layout from '@/components/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Search, Eye, Calendar } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+import { getMyTickets, Ticket } from '@/lib/tickets';
+import Layout from '@/components/Layout';
+
+const statusColors = {
+  open: 'bg-blue-500',
+  in_progress: 'bg-yellow-500',
+  resolved: 'bg-green-500',
+  closed: 'bg-gray-500',
+};
+
+const priorityColors = {
+  low: 'bg-gray-500',
+  medium: 'bg-blue-500',
+  high: 'bg-orange-500',
+  urgent: 'bg-red-500',
+};
 
 const MyTickets = () => {
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
 
-  const myTickets = [
-    {
-      id: 'TK-001',
-      subject: 'Password reset request',
-      department: 'IT',
-      priority: 'Medium',
-      status: 'In Progress',
-      date: '2024-01-15',
-      lastUpdate: '2024-01-15',
-      description: 'Unable to access email account after password change'
-    },
-    {
-      id: 'TK-002',
-      subject: 'New hire equipment setup',
-      department: 'HR',
-      priority: 'High',
-      status: 'Open',
-      date: '2024-01-14',
-      lastUpdate: '2024-01-14',
-      description: 'Need laptop and access cards for new team member'
-    },
-    {
-      id: 'TK-003',
-      subject: 'Office space request',
-      department: 'Admin',
-      priority: 'Low',
-      status: 'Resolved',
-      date: '2024-01-13',
-      lastUpdate: '2024-01-13',
-      description: 'Request for additional desk space for team expansion'
-    },
-    {
-      id: 'TK-004',
-      subject: 'Software license renewal',
-      department: 'IT',
-      priority: 'Medium',
-      status: 'Closed',
-      date: '2024-01-12',
-      lastUpdate: '2024-01-12',
-      description: 'Adobe Creative Suite license expiring soon'
-    },
-  ];
+  useEffect(() => {
+    fetchTickets();
+  }, []);
 
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      'Open': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-      'In Progress': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-      'Resolved': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-      'Closed': 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-      'On Hold': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300',
-      'Escalated': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
-    };
-    return statusConfig[status as keyof typeof statusConfig] || statusConfig['Open'];
+  const fetchTickets = async () => {
+    try {
+      const data = await getMyTickets();
+      setTickets(data);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch tickets",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const priorityConfig = {
-      'Low': 'bg-gray-100 text-gray-800',
-      'Medium': 'bg-blue-100 text-blue-800',
-      'High': 'bg-orange-100 text-orange-800',
-      'Urgent': 'bg-red-100 text-red-800',
-    };
-    return priorityConfig[priority as keyof typeof priorityConfig] || priorityConfig['Medium'];
+  const handleViewTicket = (ticketNumber: string) => {
+    navigate(`/tickets/${ticketNumber}`);
   };
 
-  const handleViewTicket = (ticketId: string) => {
-    navigate(`/employee/ticket/${ticketId.replace('TK-', '')}`);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
-
-  const stats = [
-    { title: 'Total Tickets', value: myTickets.length, color: 'text-blue-600' },
-    { title: 'Open', value: myTickets.filter(t => t.status === 'Open').length, color: 'text-orange-600' },
-    { title: 'In Progress', value: myTickets.filter(t => t.status === 'In Progress').length, color: 'text-yellow-600' },
-    { title: 'Resolved', value: myTickets.filter(t => t.status === 'Resolved').length, color: 'text-green-600' },
-  ];
 
   return (
     <Layout userRole="employee">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Tickets</h1>
-          <p className="text-gray-600 dark:text-gray-300">Track and manage your submitted support requests</p>
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">My Tickets</h1>
+          <Button onClick={() => navigate('/submit-ticket')}>
+            Create New Ticket
+          </Button>
         </div>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
-            <Card key={stat.title}>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{stat.title}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Filters */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search tickets..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="Open">Open</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Closed">Closed</SelectItem>
-                  <SelectItem value="On Hold">On Hold</SelectItem>
-                  <SelectItem value="Escalated">Escalated</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  <SelectItem value="IT">IT</SelectItem>
-                  <SelectItem value="HR">HR</SelectItem>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tickets List */}
-        <div className="space-y-4">
-          {myTickets.map((ticket) => (
-            <Card key={ticket.id} className="hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{ticket.subject}</h3>
-                      <Badge className={getStatusBadge(ticket.status)}>
-                        {ticket.status}
-                      </Badge>
-                      <Badge variant="outline" className={getPriorityBadge(ticket.priority)}>
-                        {ticket.priority}
-                      </Badge>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="w-8 h-8 border-t-2 border-b-2 border-primary rounded-full animate-spin"></div>
+          </div>
+        ) : tickets.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-8">
+              <p className="text-muted-foreground mb-4">You haven't created any tickets yet.</p>
+              <Button onClick={() => navigate('/submit-ticket')}>
+                Create Your First Ticket
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {tickets.map((ticket) => (
+              <Card key={ticket._id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">{ticket.subject}</h3>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">
+                        {ticket.description}
+                      </p>
+                      <div className="flex gap-2 mb-4">
+                        <Badge className={statusColors[ticket.status]}>
+                          {ticket.status.replace('_', ' ')}
+                        </Badge>
+                        <Badge className={priorityColors[ticket.priority]}>
+                          {ticket.priority}
+                        </Badge>
+                        <Badge variant="outline">
+                          {ticket.department}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Created on {formatDate(ticket.createdAt)}
+                      </p>
                     </div>
-                    
-                    <p className="text-gray-600 dark:text-gray-300 mb-3">{ticket.description}</p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                      <span>ID: {ticket.id}</span>
-                      <span>Department: {ticket.department}</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Submitted: {ticket.date}
-                      </span>
-                      <span>Last Updated: {ticket.lastUpdate}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 ml-4">
-                    <Button variant="outline" size="sm" onClick={() => handleViewTicket(ticket.id)}>
-                      <Eye className="h-4 w-4 mr-2" />
+                    <Button
+                      variant="outline"
+                      onClick={() => handleViewTicket(ticket.ticketNumber)}
+                    >
                       View Details
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -1,11 +1,44 @@
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FileText, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/lib/auth.tsx';
+import { api } from '@/lib/api';
+
+interface TicketStats {
+  open: number;
+  inProgress: number;
+  resolved: number;
+  urgent: number;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [stats, setStats] = useState<TicketStats>({
+    open: 0,
+    inProgress: 0,
+    resolved: 0,
+    urgent: 0
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get('/tickets/stats');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Error fetching ticket stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const recentTickets = [
     { id: 1, subject: 'Password reset request', status: 'In Progress', department: 'IT', date: '2024-01-15' },
@@ -13,11 +46,11 @@ const Dashboard = () => {
     { id: 3, subject: 'Office space request', status: 'Resolved', department: 'Admin', date: '2024-01-13' },
   ];
 
-  const stats = [
-    { title: 'Open Tickets', value: 12, icon: FileText, color: 'text-blue-600' },
-    { title: 'In Progress', value: 5, icon: Clock, color: 'text-yellow-600' },
-    { title: 'Resolved', value: 28, icon: CheckCircle, color: 'text-green-600' },
-    { title: 'Urgent', value: 3, icon: AlertCircle, color: 'text-red-600' },
+  const statsCards = [
+    { title: 'Open Tickets', value: stats.open, icon: FileText, color: 'text-blue-600' },
+    { title: 'In Progress', value: stats.inProgress, icon: Clock, color: 'text-yellow-600' },
+    { title: 'Resolved', value: stats.resolved, icon: CheckCircle, color: 'text-green-600' },
+    { title: 'Urgent', value: stats.urgent, icon: AlertCircle, color: 'text-red-600' },
   ];
 
   const handleViewTicket = (ticketId: number) => {
@@ -25,7 +58,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Layout userRole="employee">
+    <Layout userRole={user?.role || 'employee'}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
@@ -73,12 +106,12 @@ const Dashboard = () => {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {stats.map((stat) => (
+          {statsCards.map((stat) => (
             <Card key={stat.title}>
               <CardContent className="flex items-center p-6">
                 <stat.icon className={`h-8 w-8 ${stat.color} mr-4`} />
                 <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-2xl font-bold">{isLoading ? '...' : stat.value}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">{stat.title}</p>
                 </div>
               </CardContent>

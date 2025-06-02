@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,75 +7,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Search, Eye, MessageSquare, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
 
 const AdminTickets = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const allTickets = [
-    {
-      id: 'TK-001',
-      subject: 'Password reset request',
-      department: 'IT',
-      priority: 'Medium',
-      status: 'Open',
-      submittedBy: 'Jane Doe',
-      assignedTo: 'IT Agent',
-      date: '2024-01-15',
-      lastUpdate: '2024-01-15',
-      description: 'Unable to access email account after password change'
-    },
-    {
-      id: 'TK-002',
-      subject: 'New hire onboarding',
-      department: 'HR',
-      priority: 'High',
-      status: 'In Progress',
-      submittedBy: 'John Smith',
-      assignedTo: 'HR Agent',
-      date: '2024-01-15',
-      lastUpdate: '2024-01-15',
-      description: 'Need to setup new employee workspace and accounts'
-    },
-    {
-      id: 'TK-003',
-      subject: 'Office supplies request',
-      department: 'Admin',
-      priority: 'Low',
-      status: 'Open',
-      submittedBy: 'Sarah Wilson',
-      assignedTo: 'Admin Agent',
-      date: '2024-01-14',
-      lastUpdate: '2024-01-14',
-      description: 'Request for additional office supplies for team'
-    },
-    {
-      id: 'TK-004',
-      subject: 'VPN connection issues',
-      department: 'IT',
-      priority: 'High',
-      status: 'Escalated',
-      submittedBy: 'Robert Wilson',
-      assignedTo: 'IT Agent',
-      date: '2024-01-13',
-      lastUpdate: '2024-01-14',
-      description: 'Cannot connect to company VPN from home office'
-    },
-    {
-      id: 'TK-005',
-      subject: 'Benefits inquiry',
-      department: 'HR',
-      priority: 'Medium',
-      status: 'Resolved',
-      submittedBy: 'Emily Chen',
-      assignedTo: 'HR Agent',
-      date: '2024-01-12',
-      lastUpdate: '2024-01-13',
-      description: 'Questions about health insurance coverage'
-    },
-  ];
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await api.get('/tickets/all');
+        setTickets(response.data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to fetch tickets. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -110,13 +69,34 @@ const AdminTickets = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/admin/ticket/${ticketId.replace('TK-', '')}`);
+    // Use the full ticket ID (e.g., TK-001)
+    navigate(`/admin/ticket/${ticketId}`);
   };
 
   const handleReassignTicket = (ticketId: string) => {
     // This would open a reassignment modal
     console.log(`Reassigning ticket ${ticketId}`);
   };
+
+  // Filter tickets based on search term and filters
+  const filteredTickets = tickets.filter((ticket: any) => {
+    const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         ticket.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
+    const matchesDepartment = departmentFilter === 'all' || ticket.department === departmentFilter;
+    return matchesSearch && matchesStatus && matchesDepartment;
+  });
+
+  if (loading) {
+    return (
+      <Layout userRole="superAdmin">
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout userRole="superAdmin">
@@ -174,7 +154,7 @@ const AdminTickets = () => {
 
         {/* Tickets List */}
         <div className="space-y-4">
-          {allTickets.map((ticket) => (
+          {filteredTickets.map((ticket: any) => (
             <Card key={ticket.id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">

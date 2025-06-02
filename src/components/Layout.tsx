@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -53,7 +52,6 @@ const Layout = ({ children, userRole = 'employee' }: LayoutProps) => {
   const agentNavItems = [
     { icon: Home, label: 'Agent Dashboard', path: '/agent-dashboard' },
     { icon: FileText, label: 'All Tickets', path: '/agent-tickets' },
-    { icon: MessageSquare, label: 'Ask Bot', path: '/ask-bot' },
   ];
 
   const adminNavItems = [

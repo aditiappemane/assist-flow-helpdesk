@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -166,11 +165,11 @@ const AgentDashboard = () => {
   };
 
   const handleViewTicket = (ticketId: string) => {
-    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId}?action=view`);
   };
 
   const handleReplyTicket = (ticketId: string) => {
-    navigate(`/agent/ticket/${ticketId.replace('TK-', '')}`);
+    navigate(`/agent/ticket/${ticketId}?action=reply`);
   };
 
   return (

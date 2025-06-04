@@ -1,5 +1,7 @@
 export interface ChatMessage {
-  message: string;
+  id: string;
+  content: string;
+  sender: 'user' | 'bot';
   timestamp: string;
 }
 
@@ -12,17 +14,26 @@ export interface ChatResponse {
   timestamp: string;
 }
 
+export interface TicketData {
+  ticketNumber: string;
+  subject: string;
+  description: string;
+  status: string;
+  department: string;
+  priority: string;
+  createdAt: string;
+}
+
 const API_URL = 'http://localhost:5000/api/chat'; // Updated to match backend port
 
-export async function sendMessage(message: string): Promise<ChatResponse> {
+export async function sendMessage(message: string, ticketId?: string): Promise<ChatResponse> {
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message }),
-      credentials: 'include', // Include cookies for authentication
+      body: JSON.stringify({ message, ticketId }),
     });
 
     if (!response.ok) {
@@ -30,13 +41,9 @@ export async function sendMessage(message: string): Promise<ChatResponse> {
       throw new Error(error.error || 'Failed to send message');
     }
 
-    const data = await response.json();
-    return {
-      message: data.message,
-      timestamp: data.timestamp,
-    };
+    return await response.json();
   } catch (error) {
-    console.error('Chat service error:', error);
+    console.error('Error sending message:', error);
     throw error;
   }
 } 

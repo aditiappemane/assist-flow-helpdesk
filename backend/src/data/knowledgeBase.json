@@ -1,0 +1,48 @@
+{
+  "policies": [
+    {
+      "id": 1,
+      "content": "All employees must complete the onboarding formalities, including submission of identification documents, signing of the employment contract, and attending the orientation program within their first week of joining."
+    },
+    {
+      "id": 2,
+      "content": "Official working hours are from 9:00 AM to 6:00 PM, Monday through Friday. Employees are expected to be present during core business hours and may work remotely only with prior approval from their reporting manager."
+    },
+    {
+      "id": 3,
+      "content": "Employees can raise IT service requests such as password resets, email setup, and laptop issues using the internal Helpdesk Portal. The IT team will respond within 24 working hours for general issues and 4 hours for critical incidents."
+    },
+    {
+      "id": 4,
+      "content": "Leave requests must be submitted at least three days in advance through the HRMS system. Leaves will be approved by the reporting manager and are subject to team availability and workload."
+    },
+    {
+      "id": 5,
+      "content": "Company assets such as laptops, mobile devices, and ID cards must be returned during the exit process. Failure to return assets may result in salary deductions or legal action."
+    },
+    {
+      "id": 6,
+      "content": "Office premises are accessible via employee ID cards between 8:00 AM and 8:00 PM. Any access beyond these hours requires special permission from the Admin department."
+    },
+    {
+      "id": 7,
+      "content": "The company encourages a respectful and inclusive workplace. Any incident of harassment or discrimination should be reported immediately to the HR department or through the anonymous grievance form."
+    },
+    {
+      "id": 8,
+      "content": "Data security is a shared responsibility. Employees must avoid sharing passwords and should report any suspicious email or system behavior to the IT security team."
+    },
+    {
+      "id": 9,
+      "content": "Pantry services are available from 10:00 AM to 5:00 PM. Employees are expected to maintain cleanliness and avoid wastage of food and beverages provided by the company."
+    },
+    {
+      "id": 10,
+      "content": "Employees must notify HR of any changes in personal information such as address, emergency contact, or bank details to ensure accurate records and payroll processing."
+    },
+    {
+      "id": 11,
+      "content": "RCB won IPL 2025"
+    }
+  ]
+}

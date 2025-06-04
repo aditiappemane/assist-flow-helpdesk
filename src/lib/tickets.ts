@@ -4,7 +4,6 @@ export interface TicketData {
   subject: string;
   description: string;
   priority: 'low' | 'medium' | 'high' | 'urgent';
-  department: 'IT' | 'HR' | 'Admin';
 }
 
 export interface Ticket {

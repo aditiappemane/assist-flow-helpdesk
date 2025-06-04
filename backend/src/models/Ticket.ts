@@ -17,6 +17,12 @@ export interface ITicket extends Document {
   attachments?: string[];
   createdAt: Date;
   updatedAt: Date;
+  aiCategorization: {
+    department: 'IT' | 'HR' | 'Admin';
+    confidence: number;
+    reason: string;
+    categorizedAt: Date;
+  };
 }
 
 const ticketSchema = new Schema<ITicket>(
@@ -51,6 +57,19 @@ const ticketSchema = new Schema<ITicket>(
       enum: ['IT', 'HR', 'Admin'],
       required: true,
     },
+    aiCategorization: {
+      department: {
+        type: String,
+        enum: ['IT', 'HR', 'Admin'],
+      },
+      confidence: {
+        type: Number,
+        min: 0,
+        max: 1,
+      },
+      reason: String,
+      categorizedAt: Date,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -83,5 +102,11 @@ const ticketSchema = new Schema<ITicket>(
     timestamps: true,
   }
 );
+
+// Update the updatedAt timestamp before saving
+ticketSchema.pre('save', function(next) {
+  this.updatedAt = new Date();
+  next();
+});
 
 export const Ticket = mongoose.model<ITicket>('Ticket', ticketSchema); 

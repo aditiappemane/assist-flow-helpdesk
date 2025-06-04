@@ -3,11 +3,12 @@ import { Ticket, ITicket } from '../models/Ticket';
 import { User } from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import mongoose from 'mongoose';
+import { categorizeTicket } from '../services/aiService';
 
 // Create a new ticket
 export const createTicket: RequestHandler = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { subject, description, priority, department } = req.body;
+    const { subject, description, priority } = req.body;
     const createdBy = req.user?._id;
 
     if (!createdBy) {
@@ -16,17 +17,13 @@ export const createTicket: RequestHandler = async (req: AuthRequest, res: Respon
     }
 
     // Validate required fields
-    if (!subject || !description || !department) {
-      res.status(400).json({ error: 'Subject, description, and department are required' });
+    if (!subject || !description) {
+      res.status(400).json({ error: 'Subject and description are required' });
       return;
     }
 
-    // Validate department
-    const validDepartments = ['IT', 'HR', 'Admin'];
-    if (!validDepartments.includes(department)) {
-      res.status(400).json({ error: 'Invalid department. Must be one of: IT, HR, Admin' });
-      return;
-    }
+    // Get AI categorization using both subject and description
+    const aiCategory = categorizeTicket(subject, description);
 
     // Generate ticket number
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -39,12 +36,19 @@ export const createTicket: RequestHandler = async (req: AuthRequest, res: Respon
       ticketNumber = 'TK-001';
     }
 
+    // Create the ticket with AI-suggested department
     const ticket = new Ticket({
       ticketNumber,
       subject,
       description,
       priority: priority || 'medium',
-      department,
+      department: aiCategory.department, // Use AI-suggested department
+      aiCategorization: {
+        department: aiCategory.department,
+        confidence: aiCategory.confidence,
+        reason: aiCategory.reason,
+        categorizedAt: new Date(),
+      },
       createdBy,
       status: 'open',
       comments: []
@@ -53,12 +57,21 @@ export const createTicket: RequestHandler = async (req: AuthRequest, res: Respon
     await ticket.save();
 
     res.status(201).json({
-      message: 'Ticket created successfully',
+      success: true,
+      message: `Ticket created successfully and automatically assigned to ${aiCategory.department} department (Confidence: ${(aiCategory.confidence * 100).toFixed(1)}%)`,
       ticket,
+      categorization: {
+        department: aiCategory.department,
+        confidence: aiCategory.confidence,
+        reason: aiCategory.reason
+      }
     });
   } catch (error: any) {
     console.error('Error creating ticket:', error);
-    res.status(500).json({ error: error.message || 'Error creating ticket' });
+    res.status(500).json({ 
+      success: false,
+      error: error.message || 'Error creating ticket' 
+    });
   }
 };
 

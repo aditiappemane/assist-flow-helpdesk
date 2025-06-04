@@ -1,73 +1,157 @@
-# Welcome to your Lovable project
+# AssistFlow Helpdesk
 
-## Project info
+A modern helpdesk application with AI-powered support, built using React, Node.js, and MongoDB.
 
-**URL**: https://lovable.dev/projects/83a91400-78f5-4be2-84b9-7dd50affe0cc
+## Features
 
-## How can I edit this code?
+### AI-Powered Support
+- **AskBot**: An AI-powered chat assistant that helps users with common IT issues
+- **Smart Ticket Routing**: AI-assisted ticket categorization and routing
+- **Automated Responses**: AI-generated initial responses for common issues
+- **Knowledge Base Integration**: AI-powered search and suggestions
 
-There are several ways of editing your application.
+### User Roles
 
-**Use Lovable**
+1. **End Users**
+   - Submit and track support tickets
+   - Chat with AI assistant (AskBot)
+   - View ticket history and status
+   - Access knowledge base
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/83a91400-78f5-4be2-84b9-7dd50affe0cc) and start prompting.
+2. **Support Agents**
+   - View and manage assigned tickets
+   - Respond to user queries
+   - Update ticket status and priority
+   - Access AI-powered response suggestions
 
-Changes made via Lovable will be committed automatically to this repo.
+3. **Administrators**
+   - Manage users and roles
+   - Configure AI settings
+   - View analytics and reports
+   - Manage knowledge base
+   - Monitor system performance
 
-**Use your preferred IDE**
+## Tech Stack
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Frontend
+- React with TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- React Query for state management
+- React Router for navigation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
+### Backend
+- Node.js with Express
 - TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- MongoDB for database
+- Google Gemini AI for chat and automation
+- JWT for authentication
 
-## How can I deploy this project?
+## Prerequisites
 
-Simply open [Lovable](https://lovable.dev/projects/83a91400-78f5-4be2-84b9-7dd50affe0cc) and click on Share -> Publish.
+- Node.js (v18 or higher)
+- MongoDB (v6 or higher)
+- Google Gemini API key
+- npm or yarn package manager
 
-## Can I connect a custom domain to my Lovable project?
+## Setup Instructions
 
-Yes, you can!
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/aditiappemane/assist-flow-helpdesk.git
+   cd assist-flow-helpdesk
+   ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+2. **Install dependencies**
+   ```bash
+   # Install frontend dependencies
+   npm install
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+   # Install backend dependencies
+   cd backend
+   npm install
+   ```
+
+3. **Environment Setup**
+
+   Create a `.env` file in the backend directory:
+   ```
+   PORT=3000
+   MONGODB_URI=mongodb://localhost:27017/helpdesk
+   JWT_SECRET=your_jwt_secret
+   GEMINI_API_KEY=your_gemini_api_key
+   NODE_ENV=development
+   ```
+
+4. **Start the development servers**
+
+   In the root directory:
+   ```bash
+   # Start frontend (in one terminal)
+   npm run dev
+
+   # Start backend (in another terminal)
+   cd backend
+   npm run dev
+   ```
+
+   The frontend will be available at `http://localhost:8080`
+   The backend will be available at `http://localhost:3000`
+
+## AI Features Implementation
+
+### 1. AskBot Chat Assistant
+- Powered by Google's Gemini AI
+- Context-aware responses for IT support
+- Step-by-step troubleshooting guidance
+- Integration with knowledge base
+
+### 2. Smart Ticket Management
+- **Automatic Department Categorization**
+  - AI-powered analysis of ticket content
+  - Automatic routing to IT, HR, or Admin departments
+  - Confidence scoring for categorization
+  - Explanation of categorization decisions
+- Priority assessment
+- Suggested solutions based on ticket content
+- Duplicate ticket detection
+
+### 3. Automated Support
+- Initial response generation
+- Common issue resolution suggestions
+- Knowledge base article recommendations
+- Follow-up question handling
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Get current user
+
+### Tickets
+- `GET /api/tickets` - List tickets
+- `POST /api/tickets` - Create ticket
+- `GET /api/tickets/:id` - Get ticket details
+- `PUT /api/tickets/:id` - Update ticket
+- `DELETE /api/tickets/:id` - Delete ticket
+
+### Chat
+- `POST /api/chat` - Send message to AskBot
+- `GET /api/chat/history` - Get chat history
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, email support@assistflow.com or create an issue in the repository.

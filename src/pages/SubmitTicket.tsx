@@ -10,13 +10,11 @@ import { toast } from '@/hooks/use-toast';
 import { createTicket, TicketData } from '@/lib/tickets';
 import Layout from '@/components/Layout';
 
-const DEPARTMENTS = ['IT', 'HR', 'Admin'] as const;
 const PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
 
 const SubmitTicket = () => {
   const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
-  const [department, setDepartment] = useState<typeof DEPARTMENTS[number]>('IT');
   const [priority, setPriority] = useState<typeof PRIORITIES[number]>('medium');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -64,7 +62,6 @@ const SubmitTicket = () => {
       const ticketData: TicketData = {
         subject,
         description,
-        department,
         priority,
       };
 
@@ -78,7 +75,6 @@ const SubmitTicket = () => {
       // Reset form
       setSubject('');
       setDescription('');
-      setDepartment('IT');
       setPriority('medium');
 
       // Navigate to my tickets
@@ -102,7 +98,7 @@ const SubmitTicket = () => {
           <CardHeader>
             <CardTitle>Submit New Ticket</CardTitle>
             <CardDescription>
-              Fill out the form below to submit a new support ticket
+              Fill out the form below to submit a new support ticket. The system will automatically determine the appropriate department based on your issue.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -132,46 +128,24 @@ const SubmitTicket = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Select
-                    value={department}
-                    onValueChange={(value: typeof DEPARTMENTS[number]) => setDepartment(value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DEPARTMENTS.map((dept) => (
-                        <SelectItem key={dept} value={dept}>
-                          {dept}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={priority}
-                    onValueChange={(value: typeof PRIORITIES[number]) => setPriority(value)}
-                    disabled={isLoading}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PRIORITIES.map((pri) => (
-                        <SelectItem key={pri} value={pri}>
-                          {pri.charAt(0).toUpperCase() + pri.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={priority}
+                  onValueChange={(value: typeof PRIORITIES[number]) => setPriority(value)}
+                  disabled={isLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRIORITIES.map((pri) => (
+                      <SelectItem key={pri} value={pri}>
+                        {pri.charAt(0).toUpperCase() + pri.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button

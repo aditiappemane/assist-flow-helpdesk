@@ -24,7 +24,7 @@ export interface TicketData {
   createdAt: string;
 }
 
-const API_URL = 'http://localhost:5000/api/chat'; // Updated to match backend port
+const API_URL = 'https://assist-flow-helpdesk.onrender.com/api/chat';
 
 export async function sendMessage(message: string, ticketId?: string): Promise<ChatResponse> {
   try {

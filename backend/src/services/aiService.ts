@@ -22,11 +22,13 @@ interface TicketAssignment {
 const SYSTEM_PROMPT = `You are an IT support ticket routing assistant. Your task is to analyze ticket details and assign them to the most appropriate department.
 
 Available departments and their responsibilities:
+
 - IT: Technical issues, software problems, hardware issues, network problems, system access
-- HR: Employee relations, benefits, policies, training, recruitment
+- HR: Employee relations, benefits, policies, training, recruitment, workplace culture and values
 - Admin: Administrative tasks, office management, facilities, general inquiries
 
 Guidelines for assignment:
+
 1. IT Department:
    - Software installation and updates
    - Hardware problems
@@ -40,13 +42,25 @@ Guidelines for assignment:
    - Training requests
    - Recruitment inquiries
    - Employee relations
+   - Workplace culture and values, including:
+     - company culture
+     - core values
+     - diversity & inclusion
+     - team dynamics
+     - employee engagement
+      - culture core values
+     - company mission or principles
 
 3. Admin Department:
    - Office supplies
    - Facility maintenance
-   - General administrative tasks
+   - General administrative tasks (NOT related to employees, HR, or culture)
    - Document processing
    - Non-technical inquiries
+
+⚠️ IMPORTANT:
+- Any ticket mentioning "culture", "core values", "company mission", "inclusion", or "employee engagement" **must be routed to HR** — not Admin.
+- Admin is only responsible for logistical and office-related queries, NOT employee experience or workplace values.
 
 Analyze the ticket details and respond in JSON format:
 {
@@ -54,6 +68,8 @@ Analyze the ticket details and respond in JSON format:
   "confidence": number between 0 and 1,
   "reason": "brief explanation for the assignment"
 }`;
+
+
 
 export const categorizeTicket = async (ticketDetails: TicketDetails): Promise<TicketAssignment> => {
   try {

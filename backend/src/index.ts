@@ -7,6 +7,7 @@ import { config } from './config';
 import authRoutes from './routes/auth';
 import ticketRoutes from './routes/tickets';
 import chatRouter from './routes/chat';
+import userRoutes from './routes/users';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/chat', chatRouter);
+app.use('/api/users', userRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

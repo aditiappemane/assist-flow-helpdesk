@@ -1,104 +1,103 @@
-export interface TicketCategory {
+import { Configuration, OpenAIApi } from 'openai';
+
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
+interface TicketDetails {
+  subject: string;
+  description: string;
+  priority?: string;
+  attachments?: string[];
+}
+
+interface TicketAssignment {
   department: 'IT' | 'HR' | 'Admin';
   confidence: number;
   reason: string;
 }
 
-const IT_KEYWORDS = [
-  // Hardware
-  'computer', 'laptop', 'desktop', 'hardware', 'printer', 'scanner', 'device', 'monitor', 'keyboard', 'mouse',
-  // Software
-  'software', 'application', 'app', 'program', 'update', 'install', 'uninstall', 'patch', 'version',
-  // Network
-  'network', 'wifi', 'internet', 'connection', 'server', 'database', 'cloud', 'vpn', 'firewall',
-  // Security
-  'password', 'login', 'access', 'security', 'authentication', 'authorization', 'encryption',
-  // Issues
-  'error', 'bug', 'crash', 'slow', 'performance', 'issue', 'problem', 'trouble', 'not working',
-  // Technical Terms
-  'technical', 'system', 'configuration', 'settings', 'backup', 'restore', 'maintenance'
-];
+const SYSTEM_PROMPT = `You are an IT support ticket routing assistant. Your task is to analyze ticket details and assign them to the most appropriate department.
 
-const HR_KEYWORDS = [
-  // Employee Management
-  'employee', 'staff', 'personnel', 'hiring', 'recruitment', 'interview', 'resume', 'candidate',
-  // Benefits
-  'benefit', 'insurance', 'health', 'dental', 'vision', 'coverage', 'claim',
-  // Leave & Time Off
-  'leave', 'vacation', 'sick', 'time off', 'absence', 'attendance',
-  // Compensation
-  'salary', 'compensation', 'pay', 'bonus', 'raise', 'promotion', 'increment',
-  // Training & Development
-  'training', 'development', 'course', 'learning', 'workshop', 'seminar',
-  // Performance
-  'performance', 'review', 'appraisal', 'evaluation', 'feedback',
-  // Policies
-  'policy', 'procedure', 'guideline', 'workplace', 'environment'
-];
+Available departments and their responsibilities:
+- IT: Technical issues, software problems, hardware issues, network problems, system access
+- HR: Employee relations, benefits, policies, training, recruitment
+- Admin: Administrative tasks, office management, facilities, general inquiries
 
-const ADMIN_KEYWORDS = [
-  // Office Management
-  'office', 'facility', 'maintenance', 'clean', 'supply', 'stationery', 'equipment',
-  // Scheduling
-  'schedule', 'meeting', 'room', 'booking', 'reservation', 'calendar',
-  // Travel & Expenses
-  'travel', 'expense', 'reimbursement', 'claim', 'receipt', 'invoice',
-  // Documentation
-  'document', 'form', 'approval', 'request', 'permission', 'authorization',
-  // General
-  'general', 'inquiry', 'information', 'assistance', 'help', 'support',
-  // Compliance
-  'compliance', 'regulation', 'policy', 'procedure', 'guideline'
-];
+Guidelines for assignment:
+1. IT Department:
+   - Software installation and updates
+   - Hardware problems
+   - Network connectivity issues
+   - System access and permissions
+   - Technical support requests
 
-export const categorizeTicket = (title: string, description: string): TicketCategory => {
+2. HR Department:
+   - Employee benefits
+   - Workplace policies
+   - Training requests
+   - Recruitment inquiries
+   - Employee relations
+
+3. Admin Department:
+   - Office supplies
+   - Facility maintenance
+   - General administrative tasks
+   - Document processing
+   - Non-technical inquiries
+
+Analyze the ticket details and respond in JSON format:
+{
+  "department": "IT|HR|Admin",
+  "confidence": number between 0 and 1,
+  "reason": "brief explanation for the assignment"
+}`;
+
+export const categorizeTicket = async (ticketDetails: TicketDetails): Promise<TicketAssignment> => {
   try {
-    // Combine title and description, giving more weight to title
-    const content = `${title} ${title} ${description}`.toLowerCase();
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { 
+          role: "user", 
+          content: JSON.stringify({
+            subject: ticketDetails.subject,
+            description: ticketDetails.description,
+            priority: ticketDetails.priority,
+            attachments: ticketDetails.attachments
+          })
+        }
+      ],
+      temperature: 0.7,
+    });
+
+    const response = completion.data.choices[0].message?.content;
+    if (!response) {
+      throw new Error('No response from OpenAI');
+    }
+
+    const result = JSON.parse(response) as TicketAssignment;
     
-    // Count keyword matches for each department
-    const itMatches = IT_KEYWORDS.filter(keyword => content.includes(keyword)).length;
-    const hrMatches = HR_KEYWORDS.filter(keyword => content.includes(keyword)).length;
-    const adminMatches = ADMIN_KEYWORDS.filter(keyword => content.includes(keyword)).length;
-    
-    // Calculate confidence scores with weighted title
-    const totalMatches = itMatches + hrMatches + adminMatches;
-    const itConfidence = totalMatches > 0 ? itMatches / totalMatches : 0;
-    const hrConfidence = totalMatches > 0 ? hrMatches / totalMatches : 0;
-    const adminConfidence = totalMatches > 0 ? adminMatches / totalMatches : 0;
-    
-    // Find the department with highest confidence
-    const maxConfidence = Math.max(itConfidence, hrConfidence, adminConfidence);
-    
-    let department: 'IT' | 'HR' | 'Admin';
-    let reason: string;
-    
-    if (maxConfidence === 0) {
-      // If no keywords match, default to Admin
-      department = 'Admin';
-      reason = 'No specific department keywords found, defaulting to Admin';
-    } else if (itConfidence === maxConfidence) {
-      department = 'IT';
-      reason = `Found ${itMatches} IT-related keywords (${(itConfidence * 100).toFixed(1)}% confidence)`;
-    } else if (hrConfidence === maxConfidence) {
-      department = 'HR';
-      reason = `Found ${hrMatches} HR-related keywords (${(hrConfidence * 100).toFixed(1)}% confidence)`;
-    } else {
-      department = 'Admin';
-      reason = `Found ${adminMatches} Admin-related keywords (${(adminConfidence * 100).toFixed(1)}% confidence)`;
+    // Validate the response
+    if (!['IT', 'HR', 'Admin'].includes(result.department)) {
+      throw new Error('Invalid department in AI response');
     }
     
-    return {
-      department,
-      confidence: maxConfidence,
-      reason
-    };
+    if (typeof result.confidence !== 'number' || result.confidence < 0 || result.confidence > 1) {
+      throw new Error('Invalid confidence score in AI response');
+    }
+
+    return result;
   } catch (error) {
-    console.error('Error categorizing ticket:', error);
+    console.error('Error in AI ticket categorization:', error);
+    // Fallback to IT department with low confidence if AI fails
     return {
-      department: 'Admin',
+      department: 'IT',
       confidence: 0.5,
-      reason: 'Error in categorization, defaulting to Admin'
+      reason: 'Error in AI categorization, defaulting to IT department'
     };
   }
 }; 

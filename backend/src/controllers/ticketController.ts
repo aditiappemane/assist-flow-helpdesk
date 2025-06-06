@@ -22,8 +22,13 @@ export const createTicket: RequestHandler = async (req: AuthRequest, res: Respon
       return;
     }
 
-    // Get AI categorization using both subject and description
-    const aiCategory = categorizeTicket(subject, description);
+    // Get AI categorization using OpenAI
+    const aiCategory = await categorizeTicket({
+      subject,
+      description,
+      priority,
+      attachments: req.body.attachments
+    });
 
     // Generate ticket number
     const lastTicket = await Ticket.findOne().sort({ createdAt: -1 });
@@ -42,7 +47,7 @@ export const createTicket: RequestHandler = async (req: AuthRequest, res: Respon
       subject,
       description,
       priority: priority || 'medium',
-      department: aiCategory.department, // Use AI-suggested department
+      department: aiCategory.department,
       aiCategorization: {
         department: aiCategory.department,
         confidence: aiCategory.confidence,

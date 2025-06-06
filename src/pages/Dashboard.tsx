@@ -6,6 +6,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Plus, FileText, MessageSquare, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth.tsx';
 import { api } from '@/lib/api';
+import { getMyTickets } from '@/lib/tickets';
+import { Ticket } from '@/lib/tickets';
+import { format } from 'date-fns';
 
 interface TicketStats {
   open: number;
@@ -24,6 +27,7 @@ const Dashboard = () => {
     urgent: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [recentTickets, setRecentTickets] = useState<Ticket[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -37,14 +41,22 @@ const Dashboard = () => {
       }
     };
 
-    fetchStats();
-  }, []);
+    const fetchRecentTickets = async () => {
+      try {
+        const tickets = await getMyTickets();
+        // Sort tickets by creation date and get the 5 most recent ones
+        const sortedTickets = tickets
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5);
+        setRecentTickets(sortedTickets);
+      } catch (error) {
+        console.error('Error fetching recent tickets:', error);
+      }
+    };
 
-  const recentTickets = [
-    { id: 1, subject: 'Password reset request', status: 'In Progress', department: 'IT', date: '2024-01-15' },
-    { id: 2, subject: 'New hire equipment setup', status: 'Open', department: 'HR', date: '2024-01-14' },
-    { id: 3, subject: 'Office space request', status: 'Resolved', department: 'Admin', date: '2024-01-13' },
-  ];
+    fetchStats();
+    fetchRecentTickets();
+  }, []);
 
   const statsCards = [
     { title: 'Open Tickets', value: stats.open, icon: FileText, color: 'text-blue-600' },
@@ -53,8 +65,21 @@ const Dashboard = () => {
     { title: 'Urgent', value: stats.urgent, icon: AlertCircle, color: 'text-red-600' },
   ];
 
-  const handleViewTicket = (ticketId: number) => {
-    navigate(`/ticket/${ticketId}`);
+  const handleViewTicket = (ticketId: string) => {
+    navigate(`/tickets/${ticketId}`);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'bg-blue-100 text-blue-800';
+      case 'in_progress':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -127,28 +152,28 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentTickets.map((ticket) => (
-                <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <h4 className="font-medium">{ticket.subject}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {ticket.department} • {ticket.date}
-                    </p>
+              {recentTickets.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-300">No recent tickets found</p>
+              ) : (
+                recentTickets.map((ticket) => (
+                  <div key={ticket._id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">{ticket.subject}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {ticket.department} • {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(ticket.status)}`}>
+                        {ticket.status.replace('_', ' ')}
+                      </span>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewTicket(ticket._id)}>
+                        View
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      ticket.status === 'Open' ? 'bg-blue-100 text-blue-800' :
-                      ticket.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {ticket.status}
-                    </span>
-                    <Button variant="ghost" size="sm" onClick={() => handleViewTicket(ticket.id)}>
-                      View
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
